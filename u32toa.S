@@ -162,13 +162,12 @@ ENTRY(u32toa)
 	vmovd %xmm0, -4(%rax)
 	ret
 3:
-	cmp $99999999, %esi
-
 	/* Preload more constants before jumping. */
 	vmovdqa u32toa_populate_u16(%rip), %xmm5
 	vmovdqa u32toa_mask(%rip), %xmm6
 	vmovdqa u32toa_ascii_zero(%rip), %xmm7
 
+	cmp $99999999, %esi
 	ja 4f
 
 	/* Process 7-8 digits. */
