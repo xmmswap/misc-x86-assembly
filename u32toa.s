@@ -39,6 +39,10 @@
  * @corsix
  * http://www.corsix.org/content/converting-nine-digit-integers-to-strings
  * http://www.corsix.org/content/converting-floats-to-strings-part-1
+ *
+ * TODO
+ * Evaluate VPDPWSSD from AVX512_VNNI instruction set when it becomes available
+ * https://ai.intel.com/lowering-numerical-precision-increase-deep-learning-performance/
  */
 
 /*
