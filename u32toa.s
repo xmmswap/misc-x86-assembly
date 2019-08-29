@@ -3,6 +3,8 @@
 /*
  * Copyright (C) 2018 Alexander Nasonov.
  *
+ * [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
+ *
  * char *u32toa(char *out, uint32_t n);
  *
  * This function converts @n to a string and copies it to @out.
