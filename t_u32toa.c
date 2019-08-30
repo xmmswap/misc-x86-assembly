@@ -16,9 +16,16 @@
 	errx(EXIT_FAILURE, "%s:%u (in %s): %s\nAborted",  \
 	    __FILE__, __LINE__, __func__, #x); }
 
-
 /*
- * All digits[i] bytes must be initialised to NUL before the first call.
+ * Each call increments a number stored in digits by 1:
+ * "0", "1", ... "9" (len is 1),
+ * "10", "11", ... "99" (len is 2)
+ * "100", ...
+ *
+ * Before the first call the arguments must be initialised like this:
+ *
+ *	len = 1;
+ *	strncpy(digists, "0", 11);
  */
 static void
 increment(char digits[static 11], size_t *len)
@@ -48,9 +55,12 @@ int main()
 {
 	size_t i;
 	size_t len = 1;
-	char digits[11] = { };
-	char expected[11] = { '0' };
+	char digits[11];
+	char expected[11];
 	const char *e;
+
+	strncpy(digits, "", sizeof(digits));
+	strncpy(expected, "0", sizeof(expected));
 
 	e = u32toa(digits, 0);
 	REQUIRE(e == &digits[1]);
