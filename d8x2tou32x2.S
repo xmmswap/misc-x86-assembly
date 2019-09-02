@@ -70,7 +70,8 @@ ENTRY(d8x2tou32x2)
 	vpmaddubsw xmm0,xmm0,XMMWORD PTR [d8x2tou32x2_x10]
 	vpmaddwd xmm0,xmm0,XMMWORD PTR [d8x2tou32x2_x100]
 
-	# Step 3 of SWAR.
+	# Step 3 of SWAR: dwords from the previous step
+	# are small enough to pack then back to words.
 	vpackssdw xmm0,xmm0,xmm0
 	vpmaddwd xmm0,xmm0,XMMWORD PTR [d8x2tou32x2_x1e4]
 
