@@ -17,6 +17,7 @@
 	    __FILE__, __LINE__, __func__, #x); }
 #endif
 
+#ifndef BENCHMARK
 static void
 increment(char digits[], size_t len)
 {
@@ -33,6 +34,7 @@ increment(char digits[], size_t len)
 		return;
 	}
 }
+#endif
 
 int main(int argc, char *argv[])
 {
