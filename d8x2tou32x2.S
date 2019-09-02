@@ -60,17 +60,14 @@
  * 
  * 	return x;
  * }
+ *
+ * See also
+ * http://www.0x80.pl/articles/simd-parsing-int-sequences.html
  */
 
 ENTRY(d8x2tou32x2)
-	# Step 1 of SWAR. Word wide multiplication vpmullw
-	# is used because vpmullb instruction doesn't exist.
-	vpsrldq xmm1,xmm0,1
-	vpmullw xmm0,xmm0,XMMWORD PTR [d8x2tou32x2_x10]
-	vpaddw xmm0,xmm0,xmm1
-	vpand  xmm0,xmm0,XMMWORD PTR [d8x2tou32x2_mask]
-
-	# Step 2 of SWAR translates perfectly into SSE.
+	# Steps 1 and 2 of SWAR translate perfectly into AVX.
+	vpmaddubsw xmm0,xmm0,XMMWORD PTR [d8x2tou32x2_x10]
 	vpmaddwd xmm0,xmm0,XMMWORD PTR [d8x2tou32x2_x100]
 
 	# Step 3 of SWAR.
@@ -83,7 +80,6 @@ END(d8x2tou32x2)
 .data
 
 .align 16
-d8x2tou32x2_x10:  .short 10, 10, 10, 10, 10, 10, 10, 10
-d8x2tou32x2_mask: .short 255, 255, 255, 255, 255, 255, 255, 255
+d8x2tou32x2_x10:  .byte 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1 
 d8x2tou32x2_x100: .short 100, 1, 100, 1, 100, 1, 100, 1
 d8x2tou32x2_x1e4: .short 10000, 1, 10000, 1, 10000, 1, 10000, 1
