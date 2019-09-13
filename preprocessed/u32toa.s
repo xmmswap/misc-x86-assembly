@@ -143,13 +143,13 @@
 
 	sub      esi,r8d /* n % 10000 */
 	vmovd    xmm0,esi
-	vpshufb  xmm0,xmm0,XMMWORD PTR [u32toa_populate_u16]        # 6012a0 <u32toa_populate_u16>
+	vpshufb  xmm0,xmm0,XMMWORD PTR [u32toa_populate_u16]
 	vpmaddwd xmm0,xmm0,xmm2
-	vpand    xmm0,xmm0,XMMWORD PTR [u32toa_mask]        # 6012b0 <u32toa_mask>
+	vpand    xmm0,xmm0,XMMWORD PTR [u32toa_mask]
 	vpslldq  xmm1,xmm0,2
 	vpor     xmm0,xmm0,xmm1
 	vpmaddwd xmm0,xmm0,xmm3
-	vpor     xmm0,xmm0,XMMWORD PTR [u32toa_ascii_zero]        # 6012c0 <u32toa_ascii_zero>
+	vpor     xmm0,xmm0,XMMWORD PTR [u32toa_ascii_zero]
 	vpshufb  xmm0,xmm0,xmm4
 
 	imul   rcx,rdx,103
