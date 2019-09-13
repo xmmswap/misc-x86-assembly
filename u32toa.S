@@ -71,194 +71,195 @@
 
 #include <machine/asm.h>
 
+.intel_syntax noprefix
 
 ENTRY(u32toa)
-	cmp $99, %esi
-	ja 1f
+	cmp    esi,99
+	ja     1f
 
 	/* Process 1 or 2 digits. */
 
-	mov %esi, %edx
-	imul $103, %rdx, %rdx
-	shr $10, %rdx
-	lea 0x30(%rdx), %eax
-	mov %al, (%rdi)
-	lea (%rdx,%rdx,4), %edx
-	add %edx, %edx
-	cmp $10, %esi
-	sbb $-2, %rdi
-	sub %edx, %esi
-	add $0x30, %esi
-	mov %sil, -1(%rdi)
-	mov %rdi, %rax
+	mov    edx,esi
+	imul   rdx,rdx,103
+	shr    rdx,10
+	lea    eax,[rdx+0x30]
+	mov    BYTE PTR [rdi],al
+	lea    edx,[rdx+rdx*4]
+	add    edx,edx
+	cmp    esi,10
+	sbb    rdi,-2
+	sub    esi,edx
+	add    esi,0x30
+	mov    BYTE PTR [rdi-1],sil
+	mov    rax,rdi
 	ret
 1:
-	vmovdqa u32toa_first_madd(%rip), %xmm2
-	vmovdqa u32toa_second_madd(%rip), %xmm3
-	mov $0x0d090501, %r9d /* shuffle 4 digits to low bytes */
+	vmovdqa xmm2,XMMWORD PTR [u32toa_first_madd]
+	vmovdqa xmm3,XMMWORD PTR [u32toa_second_madd]
+	mov     r9d,0x0d090501 /* shuffle 4 digits to low bytes */
 
-	cmp $9999, %esi
-	ja 2f
+	cmp    esi,9999
+	ja     2f
 
 	/* Process 3-4 digits. */
 
-	vmovd %esi, %xmm0
-	vpshufb u32toa_populate_u16(%rip), %xmm0, %xmm0
-	vpmaddwd %xmm2, %xmm0, %xmm0
-	vpand u32toa_mask(%rip), %xmm0, %xmm0
-	vpslldq $2, %xmm0, %xmm1
-	vpor %xmm1, %xmm0, %xmm0
-	vpmaddwd %xmm3, %xmm0, %xmm0
-	vpor u32toa_ascii_zero(%rip), %xmm0, %xmm0
+	vmovd    xmm0,esi
+	vpshufb  xmm0,xmm0,XMMWORD PTR [u32toa_populate_u16]
+	vpmaddwd xmm0,xmm0,xmm2
+	vpand    xmm0,xmm0,XMMWORD PTR [u32toa_mask]
+	vpslldq  xmm1,xmm0,2
+	vpor     xmm0,xmm0,xmm1
+	vpmaddwd xmm0,xmm0,xmm3
+	vpor     xmm0,xmm0,XMMWORD PTR [u32toa_ascii_zero]
 
 	/* Advance the out pointer and prepare for a shuffle. */
-	mov $0x0d090905, %ecx /* shuffle 3 digits 0bcd to bccd */
-	mov %rdi, %rax
-	cmp $1000, %esi
-	cmovl %ecx, %r9d
-	sbb $-4, %rax
-	vmovd %r9d, %xmm4
+	mov    ecx,0x0d090905 /* shuffle 3 digits 0bcd to bccd */
+	mov    rax,rdi
+	cmp    esi,1000
+	cmovl  r9d,ecx
+	sbb    rax,-4
+	vmovd  xmm4,r9d
 
 	/*
 	 * Shuffle digits to low bytes of xmm0 and write
 	 * 2 words (possibly overlapping) to the buffer.
 	 */
-	vpshufb %xmm4, %xmm0, %xmm0
-	vmovd %xmm0, %edx
-	mov %dx, (%rdi)
-	shr $16, %edx
-	mov %dx, -2(%rax)
+	vpshufb xmm0,xmm0,xmm4
+	vmovd   edx,xmm0
+	mov     WORD PTR [rdi],dx
+	shr     edx,16
+	mov     WORD PTR [rax-2],dx
 	ret
 2:
-	mov %esi, %eax
-	mov $3518437209, %ecx
-	mul %ecx
-	shr $13, %edx /* n / 10000 */
-	imul $10000, %edx, %r8d
-	vmovd %r9d, %xmm4
+	mov    eax,esi
+	mov    ecx,3518437209
+	mul    ecx
+	shr    edx,13 /* n / 10000 */
+	imul   r8d,edx,10000
+	vmovd  xmm4,r9d
 
-	cmp $999999, %esi
-	ja 3f
+	cmp    esi,999999
+	ja     3f
 
 	/* Process 5-6 digits. */
 
-	sub %r8d, %esi /* n % 10000 */
-	vmovd %esi, %xmm0
-	vpshufb u32toa_populate_u16(%rip), %xmm0, %xmm0
-	vpmaddwd %xmm2, %xmm0, %xmm0
-	vpand u32toa_mask(%rip), %xmm0, %xmm0
-	vpslldq $2, %xmm0, %xmm1
-	vpor %xmm1, %xmm0, %xmm0
-	vpmaddwd %xmm3, %xmm0, %xmm0
-	vpor u32toa_ascii_zero(%rip), %xmm0, %xmm0
-	vpshufb %xmm4, %xmm0, %xmm0
+	sub      esi,r8d /* n % 10000 */
+	vmovd    xmm0,esi
+	vpshufb  xmm0,xmm0,XMMWORD PTR [u32toa_populate_u16]        # 6012a0 <u32toa_populate_u16>
+	vpmaddwd xmm0,xmm0,xmm2
+	vpand    xmm0,xmm0,XMMWORD PTR [u32toa_mask]        # 6012b0 <u32toa_mask>
+	vpslldq  xmm1,xmm0,2
+	vpor     xmm0,xmm0,xmm1
+	vpmaddwd xmm0,xmm0,xmm3
+	vpor     xmm0,xmm0,XMMWORD PTR [u32toa_ascii_zero]        # 6012c0 <u32toa_ascii_zero>
+	vpshufb  xmm0,xmm0,xmm4
 
-	imul $103, %rdx, %rcx
-	shr $10, %rcx
-	lea 0x30(%rcx), %esi
-	mov %sil, (%rdi)
-	lea (%rcx,%rcx,4), %ecx
-	add %ecx, %ecx
-	cmp $10, %edx
-	lea 4(%rdi), %rax
-	sbb $-2, %rax
-	sub %ecx, %edx
-	add $0x30, %edx
-	mov %dl, -5(%rax)
-	vmovd %xmm0, -4(%rax)
+	imul   rcx,rdx,103
+	shr    rcx,10
+	lea    esi,[rcx+0x30]
+	mov    BYTE PTR [rdi],sil
+	lea    ecx,[rcx+rcx*4]
+	add    ecx,ecx
+	cmp    edx,10
+	lea    rax,[rdi+4]
+	sbb    rax,-2
+	sub    edx,ecx
+	add    edx,0x30
+	mov    BYTE PTR [rax-5],dl
+	vmovd  DWORD PTR [rax-4],xmm0
 	ret
 3:
 	/* Preload more constants before jumping. */
-	vmovdqa u32toa_populate_u16(%rip), %xmm5
-	vmovdqa u32toa_mask(%rip), %xmm6
-	vmovdqa u32toa_ascii_zero(%rip), %xmm7
+	vmovdqa xmm5,XMMWORD PTR [u32toa_populate_u16]
+	vmovdqa xmm6,XMMWORD PTR [u32toa_mask]
+	vmovdqa xmm7,XMMWORD PTR [u32toa_ascii_zero]
 
-	cmp $99999999, %esi
-	ja 4f
+	cmp    esi,99999999
+	ja     4f
 
 	/* Process 7-8 digits. */
 
-	sub %r8d, %esi /* n % 10000 */
+	sub    esi,r8d /* n % 10000 */
 
-	vmovd %esi, %xmm0
-	vpshufb %xmm5, %xmm0, %xmm0
-	vpmaddwd %xmm2, %xmm0, %xmm0
-	vpand %xmm6, %xmm0, %xmm0
-	vpslldq $2, %xmm0, %xmm1
-	vpor %xmm1, %xmm0, %xmm0
-	vpmaddwd %xmm3, %xmm0, %xmm0
-	vpor %xmm7, %xmm0, %xmm0
-	vpshufb %xmm4, %xmm0, %xmm4
+	vmovd    xmm0,esi
+	vpshufb  xmm0,xmm0,xmm5
+	vpmaddwd xmm0,xmm0,xmm2
+	vpand    xmm0,xmm0,xmm6
+	vpslldq  xmm1,xmm0,2
+	vpor     xmm0,xmm0,xmm1
+	vpmaddwd xmm0,xmm0,xmm3
+	vpor     xmm0,xmm0,xmm7
+	vpshufb  xmm4,xmm0,xmm4
 
 	/* Advance the out pointer and prepare for a shuffle. */
-	mov $0x0d0905, %ecx /* shuffle 3 digits to low bytes */
-	mov %rdi, %rax
-	cmp $1000, %edx
-	cmovl %ecx, %r9d
-	sbb $-8, %rax
+	mov    ecx,0x0d0905 /* shuffle 3 digits to low bytes */
+	mov    rax,rdi
+	cmp    edx,1000
+	cmovl  r9d,ecx
+	sbb    rax,-8
 
-	vmovd %edx, %xmm0
-	vpshufb %xmm5, %xmm0, %xmm0
-	vpmaddwd %xmm2, %xmm0, %xmm0
-	vpand %xmm6, %xmm0, %xmm0
-	vpslldq $2, %xmm0, %xmm1
-	vpor %xmm1, %xmm0, %xmm0
-	vpmaddwd %xmm3, %xmm0, %xmm0
-	vpor %xmm7, %xmm0, %xmm0
-	vmovd %r9d, %xmm5
-	vpshufb %xmm5, %xmm0, %xmm0
+	vmovd    xmm0,edx
+	vpshufb  xmm0,xmm0,xmm5
+	vpmaddwd xmm0,xmm0,xmm2
+	vpand    xmm0,xmm0,xmm6
+	vpslldq  xmm1,xmm0,2
+	vpor     xmm0,xmm0,xmm1
+	vpmaddwd xmm0,xmm0,xmm3
+	vpor     xmm0,xmm0,xmm7
+	vmovd    xmm5,r9d
+	vpshufb  xmm0,xmm0,xmm5
 
-	vmovd %xmm0, (%rdi)
-	vmovd %xmm4, -4(%rax)
+	vmovd  DWORD PTR [rdi],xmm0
+	vmovd  DWORD PTR [rax-4],xmm4
 
 	ret
 4:
 	/* Process 9-10 digits. */
 
-	sub %r8d, %esi /* n % 10000 */
-	vmovd %esi, %xmm0
+	sub    esi,r8d /* n % 10000 */
+	vmovd  xmm0,esi
 
-	mov %edx, %eax
-	mov %edx, %esi
-	mul %ecx
-	shr $13, %edx /* n / 10000 / 10000 */
-	imul $10000, %edx, %r8d
-	sub %r8d, %esi /* n / 10000 % 10000 */
+	mov    eax,edx
+	mov    esi,edx
+	mul    ecx
+	shr    edx,13 /* n / 10000 / 10000 */
+	imul   r8d,edx,10000
+	sub    esi,r8d /* n / 10000 % 10000 */
 
-	cmp $10, %edx
-	lea 10(%rdi), %rax
-	sbb $0, %rax
+	cmp    edx,10
+	lea    rax,[rdi+10]
+	sbb    rax,0
 
-	vpshufb %xmm5, %xmm0, %xmm0
-	vpmaddwd %xmm2, %xmm0, %xmm0
-	vpand %xmm6, %xmm0, %xmm0
-	vpslldq $2, %xmm0, %xmm1
-	vpor %xmm1, %xmm0, %xmm0
-	vpmaddwd %xmm3, %xmm0, %xmm0
-	vpor %xmm7, %xmm0, %xmm0
-	vpshufb %xmm4, %xmm0, %xmm0
-	vmovd %xmm0, -4(%rax)
+	vpshufb  xmm0,xmm0,xmm5
+	vpmaddwd xmm0,xmm0,xmm2
+	vpand    xmm0,xmm0,xmm6
+	vpslldq  xmm1,xmm0,2
+	vpor     xmm0,xmm0,xmm1
+	vpmaddwd xmm0,xmm0,xmm3
+	vpor     xmm0,xmm0,xmm7
+	vpshufb  xmm0,xmm0,xmm4
+	vmovd    DWORD PTR [rax-4],xmm0
 
-	imul $103, %rdx, %r8
-	shr $10, %r8d
-	lea 0x30(%r8d), %ecx
-	mov %cx, (%rdi)
-	lea (%r8d,%r8d,4), %ecx
-	add %ecx, %ecx
-	sub %ecx, %edx
-	add $0x30, %edx
-	mov %dl, -9(%rax)
+	imul   r8,rdx,103
+	shr    r8d,10
+	lea    ecx,[r8d+0x30]
+	mov    WORD PTR [rdi],cx
+	lea    ecx,[r8d+r8d*4]
+	add    ecx,ecx
+	sub    edx,ecx
+	add    edx,0x30
+	mov    BYTE PTR [rax-9],dl
 
-	vmovd %esi, %xmm0
-	vpshufb %xmm5, %xmm0, %xmm0
-	vpmaddwd %xmm2, %xmm0, %xmm0
-	vpand %xmm6, %xmm0, %xmm0
-	vpslldq $2, %xmm0, %xmm1
-	vpor %xmm1, %xmm0, %xmm0
-	vpmaddwd %xmm3, %xmm0, %xmm0
-	vpor %xmm7, %xmm0, %xmm0
-	vpshufb %xmm4, %xmm0, %xmm0
-	vmovd %xmm0, -8(%rax)
+	vmovd    xmm0,esi
+	vpshufb  xmm0,xmm0,xmm5
+	vpmaddwd xmm0,xmm0,xmm2
+	vpand    xmm0,xmm0,xmm6
+	vpslldq  xmm1,xmm0,2
+	vpor     xmm0,xmm0,xmm1
+	vpmaddwd xmm0,xmm0,xmm3
+	vpor     xmm0,xmm0,xmm7
+	vpshufb  xmm0,xmm0,xmm4
+	vmovd    DWORD PTR [rax-8],xmm0
 
 	ret
 END(u32toa)
