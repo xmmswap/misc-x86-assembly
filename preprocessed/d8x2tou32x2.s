@@ -39,8 +39,6 @@
  * [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
  */
 
-#include <machine/asm.h>
-
 .intel_syntax noprefix
 
 /*
@@ -69,7 +67,7 @@
  * http://www.0x80.pl/articles/simd-parsing-int-sequences.html
  */
 
-ENTRY(d8x2tou32x2)
+.text; .align 16; .globl d8x2tou32x2; .type d8x2tou32x2,@function; d8x2tou32x2:;
 	# Steps 1 and 2 of SWAR translate perfectly into AVX.
 	vpmaddubsw xmm0,xmm0,XMMWORD PTR [d8x2tou32x2_x10]
 	vpmaddwd xmm0,xmm0,XMMWORD PTR [d8x2tou32x2_x100]
@@ -80,11 +78,11 @@ ENTRY(d8x2tou32x2)
 	vpmaddwd xmm0,xmm0,XMMWORD PTR [d8x2tou32x2_x1e4]
 
 	ret
-END(d8x2tou32x2)
- 
+.size d8x2tou32x2, . - d8x2tou32x2
+
 .data
 
 .align 16
-d8x2tou32x2_x10:  .byte 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1 
+d8x2tou32x2_x10:  .byte 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1
 d8x2tou32x2_x100: .short 100, 1, 100, 1, 100, 1, 100, 1
 d8x2tou32x2_x1e4: .short 10000, 1, 10000, 1, 10000, 1, 10000, 1
