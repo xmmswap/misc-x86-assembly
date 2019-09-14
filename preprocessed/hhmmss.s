@@ -33,8 +33,6 @@
  * [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
  */
 
-#include <machine/asm.h>
-
 .intel_syntax noprefix
 
 .text; .align 16; .globl hhmmss; .type hhmmss,@function; hhmmss:;
