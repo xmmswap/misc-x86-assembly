@@ -12,10 +12,6 @@
  * You need a modern cpu which supports vpshufb instruction
  * and which doesn't slow down on overlapping writes.
  *
- * This file can be compiled on NetBSD with gcc. If you
- * use a different OS, you can compile preprocessed
- * u32toa.s (lower case s) with gas and link with ld/gcc.
- *
  * The code doesn't have much comments at the moment but main
  * ideas are all published.
  *

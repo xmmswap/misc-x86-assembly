@@ -9,10 +9,6 @@
  *
  * Note: In unpacked BCD (binary coded decimal), each
  * digit takes a whole byte (vs 4 bits in packed BCD).
- *
- * This file can be compiled on NetBSD with gcc. If you
- * use a different OS, you can compile preprocessed
- * d8x2tou32x2.s (lower case s) with gas and link with ld/gcc.
  */
 
 /*
