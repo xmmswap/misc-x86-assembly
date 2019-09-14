@@ -5,8 +5,8 @@
  *
  * int hhmmss(__m128i);
  *
- * Convert "HH:MM:SS" string loaded into the low qwordof xmm0
- * to a number of seconds. Return -1 for invalid inputs.
+ * Convert "HH:MM:SS" string loaded into the low qword of
+ * xmm0 to a number of seconds. Return -1 for invalid inputs.
  *
  * This file can be compiled on NetBSD with gcc. If you
  * use a different OS, you can compile preprocessed
